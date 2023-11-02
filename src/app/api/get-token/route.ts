@@ -7,7 +7,6 @@ export async function GET() {
   try {
     // get clerk users
     const user = await currentUser();
-    console.log("calling get-token for user => ", user?.id);
 
     if (!user) {
       return NextResponse.json(

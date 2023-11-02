@@ -1,18 +1,9 @@
 "use client";
 import { useUser } from "@clerk/nextjs";
-import {
-  Channel,
-  ChannelHeader,
-  ChannelList,
-  Chat,
-  LoadingIndicator,
-  MessageInput,
-  MessageList,
-  Thread,
-  Window,
-} from "stream-chat-react";
+import { Chat, LoadingIndicator } from "stream-chat-react";
 import useInitializeChatClient from "./useInitializeChatClient";
-import { type } from "os";
+import ChatSidebar from "./ChatSidebar";
+import ChatChannel from "./ChatChannel";
 
 export default function ChatPage() {
   const chatClient = useInitializeChatClient();
@@ -30,29 +21,10 @@ export default function ChatPage() {
     <div className="h-screen">
       <Chat client={chatClient}>
         <div className="flex h-full flex-row">
-          <div className="w-full max-w-[360px]">
-            <ChannelList
-              filters={{
-                type: "messaging",
-                members: { $in: [user.id] },
-              }}
-              sort={{ last_message_at: -1 }}
-              options={{ state: true, presence: true, limit: 10 }}
-            />
-          </div>
-          <div className="h-full w-full">
-            <Channel>
-              <Window>
-                <ChannelHeader />
-                <MessageList />
-                <MessageInput />
-              </Window>
-              <Thread />
-            </Channel>
-          </div>
+          <ChatSidebar user={user} />
+          <ChatChannel />
         </div>
       </Chat>
-      {/* <UserButton afterSignOutUrl="/" /> */}
     </div>
   );
 }
