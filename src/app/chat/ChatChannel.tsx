@@ -7,19 +7,25 @@ import {
   Window,
 } from "stream-chat-react";
 
-export default function ChatChannel() {
+type ChatChannelProps = {
+  show: boolean;
+  hideChannelOnThread: boolean;
+};
+
+export default function ChatChannel({
+  show,
+  hideChannelOnThread,
+}: ChatChannelProps) {
   return (
-    <div>
-      <div className="h-full w-full">
-        <Channel>
-          <Window>
-            <ChannelHeader />
-            <MessageList />
-            <MessageInput />
-          </Window>
-          <Thread />
-        </Channel>
-      </div>
+    <div className={`h-full w-full ${show ? "block" : "hidden"}`}>
+      <Channel>
+        <Window hideOnThread={hideChannelOnThread}>
+          <ChannelHeader />
+          <MessageList />
+          <MessageInput />
+        </Window>
+        <Thread />
+      </Channel>
     </div>
   );
 }
