@@ -10,6 +10,7 @@ import UserResult from "./UserResult";
 import { ArrowLeft } from "lucide-react";
 import LoadingButton from "@/components/LoadingButton";
 import useDebounce from "@/hooks/useDebounce";
+import StartGroupChatHeader from "./StartGroupChatHeader";
 
 type UsersMenuProps = {
   loggedInUsers: UserResource;
@@ -24,6 +25,8 @@ export default function UsersMenu({
 }: UsersMenuProps) {
   const { client, setActiveChannel } = useChatContext();
   const [users, setUsers] = useState<(UserResponse & { image?: string })[]>();
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+
   const [moreUsersLoading, setMoreUsersLoading] = useState(false);
   const [endOfPaginationReached, setEndOfPaginationReached] =
     useState<boolean>();
@@ -119,8 +122,22 @@ export default function UsersMenu({
     }
   }
 
+  async function startGroupChat(members: string[], groupName?: string) {
+    try {
+      const channel = client.channel("messaging", {
+        members,
+        name: groupName,
+      });
+      await channel.create();
+      handleChannelSelected(channel);
+    } catch (err) {
+      console.error(err);
+      alert("Error creating Group");
+    }
+  }
+
   return (
-    <div className="str-chat absolute z-10 h-full w-full border-e border-e-[#DBDDE1] bg-white">
+    <div className="str-chat absolute z-10 h-full w-full overflow-y-auto border-e border-e-[#DBDDE1] bg-white">
       <div className="flex flex-col p-3">
         <div className="mb-3 flex items-center gap-3 text-lg font-bold">
           <ArrowLeft className="cursor-pointer" onClick={onClose} /> Users
@@ -133,12 +150,28 @@ export default function UsersMenu({
           onChange={(e) => setSearchUserInput(e.target.value)}
         />
       </div>
+      {selectedUsers.length > 0 && (
+        <StartGroupChatHeader
+          onConfirm={(groupName) =>
+            startGroupChat([loggedInUsers.id, ...selectedUsers], groupName)
+          }
+          onClearSelection={() => setSelectedUsers([])}
+        />
+      )}
       <div>
         {users?.map((user) => (
           <UserResult
             key={user.id}
             user={user}
             onUserClicked={startChatWithUser}
+            selected={selectedUsers.includes(user.id)}
+            onChangeSelected={(selected) =>
+              setSelectedUsers(
+                selected
+                  ? [...selectedUsers, user.id]
+                  : selectedUsers.filter((userId) => userId !== user.id),
+              )
+            }
           />
         ))}
         <div className="px-3">
