@@ -9,6 +9,7 @@ import { Channel, UserResponse } from "stream-chat";
 import UserResult from "./UserResult";
 import { ArrowLeft } from "lucide-react";
 import LoadingButton from "@/components/LoadingButton";
+import useDebounce from "@/hooks/useDebounce";
 
 type UsersMenuProps = {
   loggedInUsers: UserResource;
@@ -26,15 +27,30 @@ export default function UsersMenu({
   const [moreUsersLoading, setMoreUsersLoading] = useState(false);
   const [endOfPaginationReached, setEndOfPaginationReached] =
     useState<boolean>();
-  const PAGE_SIZE = 2;
+  const PAGE_SIZE = 10;
+  const [searchUserInput, setSearchUserInput] = useState("");
+  const searchInputDebounced = useDebounce(searchUserInput);
 
   useEffect(() => {
     async function loadInitialUsers() {
       // create a fake delay or artificial delay
       // await new Promise((resolve) => setTimeout(resolve, 1000));
+      setUsers(undefined);
+      setEndOfPaginationReached(undefined);
+
       try {
         const response = await client.queryUsers(
-          { id: { $ne: loggedInUsers.id } },
+          {
+            id: { $ne: loggedInUsers.id },
+            ...(searchInputDebounced
+              ? {
+                  $or: [
+                    { name: { $autocomplete: searchInputDebounced } },
+                    { id: { $autocomplete: searchInputDebounced } },
+                  ],
+                }
+              : {}),
+          },
           { id: 1 },
           { limit: PAGE_SIZE + 1 },
         );
@@ -47,7 +63,7 @@ export default function UsersMenu({
       }
     }
     loadInitialUsers();
-  }, [client, loggedInUsers.id]);
+  }, [client, loggedInUsers.id, searchInputDebounced]);
 
   async function loadMoreUsers() {
     setMoreUsersLoading(true);
@@ -61,6 +77,14 @@ export default function UsersMenu({
           $and: [
             { id: { $ne: loggedInUsers.id } },
             { id: { $gt: lastUserId } },
+            searchInputDebounced
+              ? {
+                  $or: [
+                    { name: { $autocomplete: searchInputDebounced } },
+                    { id: { $autocomplete: searchInputDebounced } },
+                  ],
+                }
+              : {},
           ],
         },
         { id: 1 },
@@ -97,11 +121,19 @@ export default function UsersMenu({
 
   return (
     <div className="str-chat absolute z-10 h-full w-full border-e border-e-[#DBDDE1] bg-white">
-      <div className="flex items-center gap-3 p-3 text-lg font-bold">
-        <ArrowLeft className="cursor-pointer" onClick={onClose} /> Users
+      <div className="flex flex-col p-3">
+        <div className="mb-3 flex items-center gap-3 text-lg font-bold">
+          <ArrowLeft className="cursor-pointer" onClick={onClose} /> Users
+        </div>
+        <input
+          type="search"
+          placeholder="Search"
+          className="rounded-full border border-gray-300 px-4 py-2"
+          value={searchUserInput}
+          onChange={(e) => setSearchUserInput(e.target.value)}
+        />
       </div>
       <div>
-        {!users && <LoadingUsers />}
         {users?.map((user) => (
           <UserResult
             key={user.id}
@@ -109,6 +141,11 @@ export default function UsersMenu({
             onUserClicked={startChatWithUser}
           />
         ))}
+        <div className="px-3">
+          {!users && !searchInputDebounced && <LoadingUsers />}
+          {!users && searchInputDebounced && "Searching..."}
+          {users?.length === 0 && <div>No users found</div>}
+        </div>
         {endOfPaginationReached === false && (
           <LoadingButton
             loading={moreUsersLoading}
