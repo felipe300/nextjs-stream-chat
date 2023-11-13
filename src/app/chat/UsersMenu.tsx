@@ -8,6 +8,7 @@ import { UserResource } from "@clerk/types";
 import { Channel, UserResponse } from "stream-chat";
 import UserResult from "./UserResult";
 import { ArrowLeft } from "lucide-react";
+import LoadingButton from "@/components/LoadingButton";
 
 type UsersMenuProps = {
   loggedInUsers: UserResource;
@@ -22,24 +23,59 @@ export default function UsersMenu({
 }: UsersMenuProps) {
   const { client, setActiveChannel } = useChatContext();
   const [users, setUsers] = useState<(UserResponse & { image?: string })[]>();
+  const [moreUsersLoading, setMoreUsersLoading] = useState(false);
+  const [endOfPaginationReached, setEndOfPaginationReached] =
+    useState<boolean>();
+  const PAGE_SIZE = 2;
 
   useEffect(() => {
     async function loadInitialUsers() {
-      // create a fake delay
+      // create a fake delay or artificial delay
       // await new Promise((resolve) => setTimeout(resolve, 1000));
       try {
         const response = await client.queryUsers(
           { id: { $ne: loggedInUsers.id } },
           { id: 1 },
+          { limit: PAGE_SIZE + 1 },
         );
-        setUsers(response.users);
+
+        setUsers(response.users.slice(0, PAGE_SIZE));
+        setEndOfPaginationReached(response.users.length <= PAGE_SIZE);
       } catch (err) {
         console.error(err);
         alert("Error Lading Users");
       }
     }
     loadInitialUsers();
-  }, [client, loggedInUsers]);
+  }, [client, loggedInUsers.id]);
+
+  async function loadMoreUsers() {
+    setMoreUsersLoading(true);
+
+    try {
+      const lastUserId = users?.[users.length - 1].id;
+      if (!lastUserId) return;
+
+      const response = await client.queryUsers(
+        {
+          $and: [
+            { id: { $ne: loggedInUsers.id } },
+            { id: { $gt: lastUserId } },
+          ],
+        },
+        { id: 1 },
+        { limit: PAGE_SIZE + 1 },
+      );
+
+      setUsers([...users, ...response.users.slice(0, PAGE_SIZE)]);
+      setEndOfPaginationReached(response.users.length <= PAGE_SIZE);
+    } catch (err) {
+      console.error(err);
+      alert("Error Lading Users");
+    } finally {
+      setMoreUsersLoading(false);
+    }
+  }
 
   function handleChannelSelected(channel: Channel) {
     setActiveChannel(channel);
@@ -73,6 +109,15 @@ export default function UsersMenu({
             onUserClicked={startChatWithUser}
           />
         ))}
+        {endOfPaginationReached === false && (
+          <LoadingButton
+            loading={moreUsersLoading}
+            className="m-auto mb-3 w-[80%]"
+            onClick={loadMoreUsers}
+          >
+            Load more users
+          </LoadingButton>
+        )}
       </div>
     </div>
   );
