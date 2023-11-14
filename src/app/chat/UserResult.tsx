@@ -16,7 +16,7 @@ export default function UserResult({
 }: UserResultProps) {
   return (
     <button
-      className="mb-3 flex w-full items-center gap-2 p-2 hover:bg-[#E9EAED]"
+      className="mb-3 flex w-full items-center gap-2 p-2 hover:bg-[#E9EAED] dark:hover:bg-[#1c1e22]"
       onClick={() => onUserClicked(user.id)}
     >
       <input

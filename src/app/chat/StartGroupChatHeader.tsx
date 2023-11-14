@@ -13,11 +13,11 @@ export default function StartGroupChatHeader({
   const [groupChatNameInput, setGroupChatNameInput] = useState("");
 
   return (
-    <div className="sticky top-0 z-10 flex flex-col gap-3 bg-white p-3 shadow-sm">
+    <div className="sticky top-0 z-10 flex flex-col gap-3 bg-white p-3 shadow-sm dark:bg-[#17191c]">
       <input
         type="text"
         placeholder="Group name"
-        className="rounded border border-gray-300 p-2"
+        className="rounded border border-gray-300 bg-transparent p-2 dark:border-gray-800 dark:text-white"
         value={groupChatNameInput}
         onChange={(e) => setGroupChatNameInput(e.target.value)}
       />

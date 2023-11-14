@@ -137,7 +137,7 @@ export default function UsersMenu({
   }
 
   return (
-    <div className="str-chat absolute z-10 h-full w-full overflow-y-auto border-e border-e-[#DBDDE1] bg-white">
+    <div className="str-chat absolute z-10 h-full w-full overflow-y-auto border-e border-e-[#DBDDE1] bg-white dark:border-e-gray-800 dark:bg-[#17191c]">
       <div className="flex flex-col p-3">
         <div className="mb-3 flex items-center gap-3 text-lg font-bold">
           <ArrowLeft className="cursor-pointer" onClick={onClose} /> Users
@@ -145,7 +145,7 @@ export default function UsersMenu({
         <input
           type="search"
           placeholder="Search"
-          className="rounded-full border border-gray-300 px-4 py-2"
+          className="rounded-full border border-gray-300 bg-transparent px-4 py-2 dark:border-gray-800 dark:text-white"
           value={searchUserInput}
           onChange={(e) => setSearchUserInput(e.target.value)}
         />
