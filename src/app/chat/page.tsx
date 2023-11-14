@@ -1,6 +1,6 @@
 "use client";
 import { useUser } from "@clerk/nextjs";
-import { Chat, LoadingIndicator } from "stream-chat-react";
+import { Chat, LoadingIndicator, Streami18n } from "stream-chat-react";
 import useInitializeChatClient from "./useInitializeChatClient";
 import ChatSidebar from "./ChatSidebar";
 import ChatChannel from "./ChatChannel";
@@ -9,6 +9,11 @@ import { Menu, X } from "lucide-react";
 import useWindowSize from "@/hooks/useWindowSize";
 import { mdBreakpoint } from "@/utils/tailwind";
 import { useTheme } from "../ThemeProvider";
+
+//NOTE: check for getStream translation and i18n
+const i18Instance = new Streami18n({
+  language: "en",
+});
 
 export default function ChatPage() {
   const chatClient = useInitializeChatClient();
@@ -41,6 +46,7 @@ export default function ChatPage() {
       <div className="m-auto flex h-full min-w-[350px] max-w-[1600px] flex-col shadow-sm">
         <Chat
           client={chatClient}
+          i18nInstance={i18Instance}
           theme={
             theme === "dark" ? "str-chat__theme-dark" : "str-chat__theme-light"
           }
