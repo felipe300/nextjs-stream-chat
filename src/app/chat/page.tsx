@@ -9,6 +9,7 @@ import { Menu, X } from "lucide-react";
 import useWindowSize from "@/hooks/useWindowSize";
 import { mdBreakpoint } from "@/utils/tailwind";
 import { useTheme } from "../ThemeProvider";
+import { registerServiceWorker } from "@/utils/serviceWorker";
 
 //NOTE: check for getStream translation and i18n
 const i18Instance = new Streami18n({
@@ -31,6 +32,18 @@ export default function ChatPage() {
 
   const handleSidebarOnClose = useCallback(() => {
     setChatSidebarOpen(false);
+  }, []);
+
+  useEffect(() => {
+    async function setUpServiceWorker() {
+      try {
+        await registerServiceWorker();
+      } catch (err) {
+        console.log(err);
+      }
+    }
+
+    setUpServiceWorker();
   }, []);
 
   if (!chatClient || !user) {
