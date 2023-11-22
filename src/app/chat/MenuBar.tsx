@@ -3,6 +3,7 @@ import { UserButton } from "@clerk/nextjs";
 import { Users } from "lucide-react";
 import { useTheme } from "../ThemeProvider";
 import { dark } from "@clerk/themes";
+import PushSubscriptionToggleButton from "@/components/PushSubscriptionToggleButton";
 
 type MenuBarProps = {
   onUserMenuClick: () => void;
@@ -17,6 +18,7 @@ export default function MenuBar({ onUserMenuClick }: MenuBarProps) {
         appearance={{ baseTheme: theme === "dark" ? dark : undefined }}
       />
       <div className="flex gap-6">
+        <PushSubscriptionToggleButton />
         <span title="Show users">
           <Users className="cursor-pointer" onClick={onUserMenuClick} />
         </span>
