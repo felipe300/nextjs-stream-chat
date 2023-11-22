@@ -10,6 +10,10 @@ import useWindowSize from "@/hooks/useWindowSize";
 import { mdBreakpoint } from "@/utils/tailwind";
 import { useTheme } from "../ThemeProvider";
 import { registerServiceWorker } from "@/utils/serviceWorker";
+import {
+  getCurrentPushSubscription,
+  sendPushSubscriptionToServer,
+} from "@/notifications/pushService";
 
 //NOTE: check for getStream translation and i18n
 const i18Instance = new Streami18n({
@@ -30,10 +34,6 @@ export default function ChatPage() {
     if (windowSize.width >= mdBreakpoint) setChatSidebarOpen(false);
   }, [windowSize.width]);
 
-  const handleSidebarOnClose = useCallback(() => {
-    setChatSidebarOpen(false);
-  }, []);
-
   useEffect(() => {
     async function setUpServiceWorker() {
       try {
@@ -44,6 +44,24 @@ export default function ChatPage() {
     }
 
     setUpServiceWorker();
+  }, []);
+  useEffect(() => {
+    async function syncPushSubscription() {
+      try {
+        const subscription = await getCurrentPushSubscription();
+        if (subscription) {
+          await sendPushSubscriptionToServer(subscription);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    syncPushSubscription();
+  }, []);
+
+  const handleSidebarOnClose = useCallback(() => {
+    setChatSidebarOpen(false);
   }, []);
 
   if (!chatClient || !user) {
